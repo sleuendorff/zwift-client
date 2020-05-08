@@ -2,11 +2,12 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta http-equiv="refresh" content="20">
 
-    <meta http-equiv="refresh" content="3">
-
-
-    <title>Custom HUD</title>
+    <title>realtime stats</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
@@ -14,11 +15,21 @@
     <style>
         body,h1,h2,h3,h4,h5 {
             #font-family: "Raleway", sans-serif,bold;
-            margin-top: 10px;
+            margin-top: 20px;
+            background: rgba(242, 242, 242, 0.5);
             opacity:1;
-            background-color: rgba(0, 0, 0, 0)
         }
 
+        .name {
+            font-family: "Arial Black", Gadget, sans-serif;
+            font-size: 18px;
+            letter-spacing: -0.8px;
+            word-spacing: -1.2px;
+            color: #000000;
+            font-weight: 700;
+            text-decoration: none;
+            font-style: normal;
+        } 
         .rcorners2 {
             font-family: "Arial Black", Gadget, sans-serif;
             font-size: 24px;
@@ -28,34 +39,37 @@
             font-weight: 700;
             text-decoration: none;
             font-style: normal;
+
+
             margin: 5px;
             display: inline-table;
             border-radius: 10px;
-            border: 1px solid grey;
-            padding: 5px;
-            width: 160px;
-            height: 80px;
-            background-color: lightgray;
+            border: 2px solid grey;
+            padding: 15px;
+            width: 180px;
+            height: 100px;
             background: rgba(242, 242, 242, 0.5);
             opacity:1;
         }
-        
+
+        .race_distance{
+           display: none;
+            height: 0px;
+        }
+
+        .race_position{
+            display: none;
+            height: 0px;
+        }
+
+
     </style>
 </head>
 <body>
 
-<span>
 
-    <p class="rcorners2">
+{{{teamDataTable}}}
 
-        <img src="power.png" width="30"><b> <span>111 </span> w</b><br>
-        <img src="hr.png" width="30"><b>  <span >108 </span> bpm</b><br>
-
-        <b><span>01:26:03 </span> </b><br>
-        <b><span>55.9 km</span> </b><br>
-
-    </p>
-</span>
 
 </body>
 
