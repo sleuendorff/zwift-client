@@ -8,9 +8,12 @@
   "contributors": [
     "Andy Lee <andy.lee.surfer@gmail.com>"
   ],
+  "scripts": {
+    "start": "node client.js"
+  },
   "license": "MIT",
   "keywords": [],
-  "main": "src/ZwiftAccount.js",
+  "main": "client.js",
   "engines": {
     "node": ">=7.0.0"
   },
