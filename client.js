@@ -2,24 +2,27 @@
 let lastTime = 0;
 let theIP = '192.168.2.121';
 
-let teamCheckInterval = 3;
-let myheckInterval = 2;
+let teamCheckInterval = 500;
+let myheckInterval = 3;
 
 let myID = 44150;
 
 let awsKey = 'XXX';
-let awsSecret = 'bXXX';
+let awsSecret = 'YYY';
+
+let eventDistance = 16;
 
 //upload to S3 ?
-let upload = false;
+let upload = true;
+let showSplits = false;
+let event = true;
+let eventName = 'Tour for All 2020: Stage 3';
 
 const ZwiftPacketMonitor = require('@zwfthcks/zwift-packet-monitor');
 
 
 // interface is cap interface name (can be device name or IP address)
 const monitor = new ZwiftPacketMonitor(theIP);
-
-
 
 
 function shallTest(seconds){
@@ -63,8 +66,9 @@ splits.set(38.0, "0:00:00");
 
 monitor.on('outgoingPlayerState', (playerState, serverWorldTime) => {
     //console.log("outgoingPlayerState");
+   // console.log("outgoingPlayerState");
     if(shallTest(myheckInterval)){
-        process(playerState);
+        processOutgoing(playerState);
     }
 
 });
@@ -100,7 +104,7 @@ function sec2time(timeInSeconds) {
 
 function getDistance(d) {
 
-    var dist = 0;
+
     var km = d / 1000;
 
     //show m when under 1 km
@@ -150,7 +154,6 @@ function generateSplitHTML(map) {
 }
 
 
-//TODO: implement me !!
 function generateTeamHTML(map) {
 
 
@@ -179,6 +182,7 @@ function processIncoming(playerState) {
         heartrate: playerState.heartrate,
     };
 
+
     //adds teammembers if in the list
     checkForTeamMember(playerState.id,riderData);
 
@@ -202,11 +206,39 @@ function processIncoming(playerState) {
     }
 }
 
-function writeFiles(data) {
+
+function getEventDistance(d){
+
+    var km = d / 1000;
+    var remaining = eventDistance - km ;
+    return remaining.toFixed(1);
+
+}
+
+function writeFiles(data,distance) {
 
     var handlebars = require('handlebars'),
         fs = require('fs');
 
+    if(event) {
+
+        fs.readFile('custom_event.html', 'utf-8', function (error, source) {
+
+            var eventData = {
+                name: eventName,
+                distance: getEventDistance(distance)
+            };
+
+            var template = handlebars.compile(source);
+            var eventHtml = template(eventData);
+            fs.writeFile('my_event.html', eventHtml, (error) => { /* handle error */
+            });
+        });
+
+        if(upload){
+            uploadS3('my_event.html');
+        }
+    }
 
     fs.readFile('custom_hud.html', 'utf-8', function (error, source) {
         var template = handlebars.compile(source);
@@ -215,18 +247,36 @@ function writeFiles(data) {
         });
     });
 
-    fs.readFile('custom_splits.html', 'utf-8', function (error, splitSource) {
-
-        var splitData = {
-            splitTable: generateSplitHTML(getsplits(playerState.time, playerState.distance))
-        };
-
-        var template = handlebars.compile(splitSource);
-        var splithtml = template(splitData);
-
-        fs.writeFile('my_splits.html', splithtml, (error) => {
+    fs.readFile('custom_roadtime.html', 'utf-8', function (error, source) {
+        var template = handlebars.compile(source);
+        var html = template(data);
+        fs.writeFile('my_roadtime.html', html, (error) => { /* handle error */
         });
     });
+
+    if(upload){
+        uploadS3('my_hud.html');
+        uploadS3('my_roadtime.html');
+    }
+
+    if(showSplits) {
+        fs.readFile('custom_splits.html', 'utf-8', function (error, splitSource) {
+
+            var splitData = {
+                splitTable: generateSplitHTML(getsplits(playerState.time, playerState.distance))
+            };
+
+            var template = handlebars.compile(splitSource);
+            var splithtml = template(splitData);
+
+            fs.writeFile('my_splits.html', splithtml, (error) => {
+            });
+        });
+
+        if (upload) {
+            uploadS3('my_splits.html');
+        }
+
 
 }
 
@@ -264,16 +314,15 @@ function uploadS3(filename){
         console.log(`File uploaded successfully. ${data.Location}`);
     });
 
-
-}
-
-function process(playerState) {
+}}
 
 
+function processOutgoing(playerState) {
+// console.log(playerState);
+//console.log(myID);
     //MY DATA :)
-    if (playerState.id == myID) {
+    if (playerState.id === myID) {
 
-        //console.log(playerState);
         //44150 Stephan Leuendorff
         // anja 170027
         //Sören 1111823
@@ -290,10 +339,10 @@ function process(playerState) {
             power: playerState.power,
             heartrate: playerState.heartrate,
             distance: getDistance(playerState.distance),
+            cadence: playerState.cadenceUHz,
             time: sec2time(playerState.time)
         };
 
-        writeFiles(data);
-
+        writeFiles(data,playerState.distance);
     }
 }
